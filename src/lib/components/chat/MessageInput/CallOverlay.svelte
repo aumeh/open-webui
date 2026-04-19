@@ -44,6 +44,7 @@
 	let audioStream = null;
 	let audioChunks = [];
 	let isMuted = false;
+	let lastSoundTime = Date.now();
 
 	const toggleMute = () => {
 		isMuted = !isMuted;
@@ -312,7 +313,7 @@
 		const domainData = new Uint8Array(bufferLength);
 		const timeDomainData = new Uint8Array(analyser.fftSize);
 
-		let lastSoundTime = Date.now();
+		lastSoundTime = Date.now();
 		hasStartedSpeaking = false;
 
 		console.log('🔊 Sound detection started', lastSoundTime, hasStartedSpeaking);
