@@ -52,6 +52,9 @@
 				track.enabled = !isMuted;
 			});
 		}
+		if (!isMuted) {
+			lastSoundTime = Date.now();
+		}
 	};
 
 	let videoInputDevices = [];
@@ -240,6 +243,11 @@
 						autoGainControl: true
 					}
 				});
+				if (isMuted) {
+					audioStream.getAudioTracks().forEach((track) => {
+						track.enabled = false;
+					});
+				}
 			}
 			mediaRecorder = new MediaRecorder(audioStream);
 
