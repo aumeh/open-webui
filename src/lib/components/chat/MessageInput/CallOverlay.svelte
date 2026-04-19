@@ -43,6 +43,16 @@
 	let mediaRecorder;
 	let audioStream = null;
 	let audioChunks = [];
+	let isMuted = false;
+
+	const toggleMute = () => {
+		isMuted = !isMuted;
+		if (audioStream) {
+			audioStream.getAudioTracks().forEach((track) => {
+				track.enabled = !isMuted;
+			});
+		}
+	};
 
 	let videoInputDevices = [];
 	let selectedVideoInputDeviceId = null;
@@ -302,6 +312,12 @@
 		const detectSound = () => {
 			const processFrame = () => {
 				if (!mediaRecorder || !$showCallOverlay) {
+					return;
+				}
+
+				if (isMuted) {
+					rmsLevel = 0;
+					window.requestAnimationFrame(processFrame);
 					return;
 				}
 
@@ -943,7 +959,39 @@
 				{/if}
 			</div>
 
-			<div>
+			<div class="flex items-center gap-2">
+				<Tooltip content={$i18n.t(isMuted ? 'Unmute' : 'Mute')}>
+					<button
+						class="p-3 rounded-full {isMuted ? 'bg-red-100 dark:bg-red-900' : 'bg-gray-50 dark:bg-gray-900'}"
+						type="button"
+						on:click={toggleMute}
+						aria-label={$i18n.t(isMuted ? 'Unmute' : 'Mute')}
+					>
+						{#if isMuted}
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+								class="size-5"
+							>
+								<path d="M7.049 3.434A3 3 0 0113 5v1.86l-1.5-1.5V5a1.5 1.5 0 00-2.59-1.028L7.049 3.434z" />
+								<path d="M3.28 2.22a.75.75 0 00-1.06 1.06L5.72 6.78 4.5 8H3a1 1 0 00-1 1v2a1 1 0 001 1h1.5l4.09 3.273A1 1 0 0010 14.58V9.28l2.455 2.456a3.98 3.98 0 01-1.455.644v1.56a5.48 5.48 0 002.459-1.129L15.78 15.13a.75.75 0 001.06-1.06L3.28 2.22z" />
+								<path d="M14 8.391V5a3 3 0 00-3-3c-.357 0-.694.074-1 .208v1.647L14 7.855v.536z" />
+							</svg>
+						{:else}
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+								class="size-5"
+							>
+								<path d="M7 4a3 3 0 016 0v6a3 3 0 11-6 0V4z" />
+								<path d="M5.5 9.643a.75.75 0 00-1.5 0V10c0 3.06 2.29 5.585 5.25 5.954V17.5h-1.5a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5h-1.5v-1.546A6.001 6.001 0 0016 10v-.357a.75.75 0 00-1.5 0V10a4.5 4.5 0 01-9 0v-.357z" />
+							</svg>
+						{/if}
+					</button>
+				</Tooltip>
+
 				<button
 					type="button"
 					on:click={() => {
@@ -953,7 +1001,9 @@
 					}}
 				>
 					<div class=" line-clamp-1 text-sm font-medium">
-						{#if loading}
+						{#if isMuted}
+							{$i18n.t('Muted')}
+						{:else if loading}
 							{$i18n.t('Thinking...')}
 						{:else if assistantSpeaking}
 							{$i18n.t('Tap to interrupt')}
